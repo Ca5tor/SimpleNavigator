@@ -32,8 +32,57 @@ class GraphAlgorithms {
 			return route;
 		}
 
-		//нерекурентный поиск в глубину в графе от заданной вершины
-		void depthFirstSearch(Graph &graph, int startVertex) {};
+//нерекурентный поиск в глубину в графе от заданной вершины
+		std::vector<int> depthFirstSearch(Graph &graph, int startVertex) {
+			// Vertex* v = graph.getVertex(startVertex);
+			// v->used = 1;
+			// std::vector<int> route;
+			// std::stack<Vertex *> stack;
+
+			// list<int>::iterator i;
+  			// for (i = adjList.begin(); i != adjList.end(); ++i)
+    		// 	if (v->used != 1;)
+			// 		depthFirstSearch(graph, v);
+			int dfs = 0;
+  			Stack stack;
+
+  			visited[start] = true;
+  			dfsnumber[start] = ++dfs;
+
+  			stack.Push(start, 0); // (Вершина, Начальный сосед)
+
+  			while (stack.first)
+  			{
+   				int v = stack.first->data1;
+    			// Текущая вершина
+
+    			int i = stack.first->data2; 
+    			// Продолжаем просмотр соседей с соседа `i`
+
+    			for (; i < size; ++i)
+      				if (graph[v][i] && !visited[i])
+      				{ // Найдена новая вершина
+        				visited[i] = true;
+        				dfsnumber[i] = ++dfs;
+
+        				stack.first->data2 = i + 1; 
+        				// Запомним, что когда мы вернемся в эту вершину, то продолжать 
+        				// просмотр надо будет с соседа `i + 1`
+
+        				stack.Push(i, 0);
+        				// Новая вершина: (Вершина, Начальный сосед)
+
+        				// Прерываем обработку текущей вершины и немедленно переходим к
+       	 				// обработке новой вершины
+        				break;
+      				}
+
+    			if (i == size)
+      			// Все соседи текущей вершины просмотрены и ничего нового больше не
+      			// найдено - прощаемся с вершиной и делаем шаг назад
+      			stack.Pop();
+  			}
+		};
 
 		//Поиск кратчайших путей в графе
 		void getShortestPathBetweenVertices(Graph &graph, int vertex1, int vertex2) {};
