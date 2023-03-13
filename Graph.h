@@ -4,6 +4,8 @@
 #include <iostream>
 #include <string>
 #include <list>
+#include <fstream>
+#include <vector>
 
 struct Vertex;
 
@@ -27,7 +29,7 @@ struct Vertex {
 };
 
 typedef std::list<Vertex *> ListPtrVertex;
-
+#include <sstream>
 class Graph {
 public:
 	Graph() : _sizeVertexes(0) {}
@@ -37,38 +39,62 @@ public:
 			delete *it;		
 	}
 
-	void	loadGraphFromFile(std::string filename) {
-		(void) filename;
+	bool errorReport(std::string msg) {
+		std::cout << "Error: " << msg << std::endl;
+		return false;
 	}
 
-	void	initGraph(void){
-		// для проверки графа на обход https://graphonline.ru/
-		const int N = 4;
-		int mas[N][N] = {
-			// 11
-			// {0, 29, 20, 21, 16, 31, 100, 12, 4, 31, 18},
-			// {29, 0, 15, 29, 28, 40, 72, 21, 29, 41, 12},
-			// {20, 15, 0, 15, 14, 25, 81, 9, 23, 27, 13},
-			// {21, 29, 15, 0, 4, 12, 92, 12, 25, 13, 25},
-			// {16, 28, 14, 4, 0, 16, 94, 9, 20, 16, 22},
-			// {31, 40, 25, 12, 16, 0, 95, 24, 36, 3, 37},
-			// {100, 72, 81, 92, 94, 95, 0, 90, 101, 99, 84},
-			// {12, 21, 9, 12, 9, 24, 90, 0, 15, 25, 13},
-			// {4, 29, 23, 25, 20, 36, 101, 15, 0, 35, 18},
-			// {31, 41, 27, 13, 16, 3, 99, 25, 35, 0, 38},
-			// {18, 12, 13, 25, 22, 37, 84, 13, 18, 38, 0}
-			{0, 1, 0, 1},
-			{0, 0, 1, 1},
-			{0, 1, 0, 0},
-			{1, 0, 1, 0}
-		};
-		for (size_t i = 0; i < N; i++) addVertex(i);
+	void printAllInfoToVertices(void) {
+		std::cout << "===Info to Vertex===" << std::endl;
+		for (int i = 0; i < _sizeVertexes; i++) {
+			Vertex *v = getVertex(i);
+			std::cout << "VERTEX: " << i + 1 << std::endl;
+			for (Edge edge : v->edges) {
+				std::cout << " *key= " << edge.pVrtx->key + 1<<
+				" weight= " << edge.weight << std::endl;
+			}
+		}
+	}
 
-		for (size_t i = 0; i < N; i++) {
-			for	(size_t j = 0; j < N; j++) {
-				if (mas[i][j] > 0) addEdges(i, j, mas[i][j]);
-			}		
-		}		
+	bool errLoadGraph(std::fstream *file, std::string msg) {
+		std::cout << "ERROR: " << msg << std::endl;
+		file->close();
+		return false;
+	}
+
+	bool	loadGraphFromFile(std::string filename) {
+		std::fstream file(filename);
+
+		if (!file) return errLoadGraph(&file, "ERROR 0"); // Файл нельзя открыть
+
+		std::string	line("");
+		int kol = 0, tmpNum;
+
+		// считываем 1ю строку чтобы получить кол-во вершин (строк и колонок матрицы)
+		std::getline(file, line);
+		for(std::stringstream ss(line); !ss.eof(); ) {
+			kol++;
+			if (!(ss >> tmpNum && tmpNum > 0) || kol > 1) return errLoadGraph(&file, "ERROR 1"); // в строке больше 1 числа или значения не корректны
+		}
+		for (int i = 0; i < tmpNum; i++) addVertex(i);
+
+		int str = 0;
+
+		// считываем матрицу смежности и сразу заполняем вершины
+		while (std::getline(file, line)) {
+			kol = 0;
+			if (str == _sizeVertexes) return errLoadGraph(&file, "ERROR 2"); // строк больше чем указано вершин
+			for (std::stringstream ss(line); !ss.eof(); ) {
+				if (!(ss >> tmpNum)) return errLoadGraph(&file, "ERROR 3"); // некорректные значения (не целое число)
+				if (tmpNum > 0) addEdges(str, kol, tmpNum);
+				kol++;
+			}
+			str++;
+			if (kol != _sizeVertexes) return errLoadGraph(&file, "ERROR 4"); // в матрице не хватает значений (матрица не выровнена)
+		}
+		if (str != _sizeVertexes) return errLoadGraph(&file, "ERROR 5"); // строк матрицы меньше (нет значений для вершины)
+		file.close();
+		return true;
 	}
 
 	int		getSize(void) { return _sizeVertexes; }
@@ -86,6 +112,7 @@ private:
 	//bool			_isDirectedGraph;	//граф орентированный true иначе false
 
 	void	addVertex(int key) {
+		std::cout << "add Vertex: " << key << std::endl;
 		_vertexes.push_back(new Vertex(key));
 		_sizeVertexes++;
 	}
