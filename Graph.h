@@ -1,11 +1,11 @@
 #ifndef TEST_H
 #define TEST_H
 
-#include <iostream>
-#include <string>
-#include <list>
-#include <fstream>
-#include <vector>
+# include <iostream>
+# include <string>
+# include <list>
+# include <fstream>
+# include <vector>
 
 struct Vertex;
 
