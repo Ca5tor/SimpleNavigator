@@ -43,8 +43,7 @@ private:
 	
 public:
     SimpleNavigator(std::string filename) {
-		graph.loadGraphFromFile(filename); // in process
-		graph.initGraph();
+		if (!graph.loadGraphFromFile(filename)) throw false;
 	}
     ~SimpleNavigator() {};
 
